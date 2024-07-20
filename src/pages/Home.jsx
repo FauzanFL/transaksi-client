@@ -9,18 +9,22 @@ import {
   FlexboxGrid,
   Input,
   InputGroup,
+  Message,
 } from 'rsuite';
 import EyeIcon from '@rsuite/icons/legacy/Eye';
 import EyeSlashIcon from '@rsuite/icons/legacy/EyeSlash';
 import { isLogin, login } from '../api/users';
 import { addCookie } from '../utils/jscookie';
 import { useNavigate } from 'react-router-dom';
+import { alertError, alertSuccess } from '../utils/sweetalert';
 
 const Home = () => {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
     const isLoggedIn = async () => {
@@ -42,14 +46,15 @@ const Home = () => {
 
     if (username === '') {
       valid = false;
-      msg.push('Username is required');
+      msg.push('Username harus diisi');
     }
 
     if (password === '') {
       valid = false;
-      msg.push('Password is required');
+      msg.push('Password harus diisi');
     }
 
+    setMessages(msg);
     return valid;
   };
 
@@ -59,11 +64,21 @@ const Home = () => {
         const res = await login({ username, password });
         if (res.status === 200) {
           addCookie('token', res.data.token);
+          setShowAlert(false);
+          alertSuccess('Login Berhasil');
           navigate('/dashboard');
         }
       } catch (e) {
-        console.log(e);
+        if (e.response.status === 404 || e.response.status === 401) {
+          setMessages(['Username atau password salah!']);
+          setShowAlert(true);
+        } else {
+          console.log(e);
+          alertError(e.response.data);
+        }
       }
+    } else {
+      setShowAlert(true);
     }
   };
 
@@ -74,6 +89,15 @@ const Home = () => {
           <FlexboxGrid justify="center" align="middle" className="h-full p-2">
             <FlexboxGrid.Item colspan={24} className="max-w-96">
               <Panel header={<h3>Login</h3>} className="bg-white" bordered>
+                {showAlert && (
+                  <Message showIcon type="error">
+                    <ul>
+                      {messages.map((msg, i) => (
+                        <li key={i}>{msg}</li>
+                      ))}
+                    </ul>
+                  </Message>
+                )}
                 <Form onSubmit={handleLogin} fluid>
                   <Form.Group>
                     <Form.ControlLabel>Username</Form.ControlLabel>

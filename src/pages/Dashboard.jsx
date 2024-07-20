@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Content } from 'rsuite';
 import SidebarComp from '../components/SidebarComp';
 import HeaderComp from '../components/HeaderComp';
+import { alertError } from '../utils/sweetalert';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const Dashboard = () => {
       } catch (e) {
         console.log(e);
         if (e.response.status === 403) {
+          alertError('Silakan login terlebih dahulu');
           navigate('/');
         }
       }

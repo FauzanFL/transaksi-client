@@ -18,6 +18,7 @@ import Column from 'rsuite/esm/Table/TableColumn';
 import { Cell, HeaderCell } from 'rsuite-table';
 import { Plus, Search } from '@rsuite/icons';
 import { formatRp, formatTgl } from '../utils/formatting';
+import { alertError } from '../utils/sweetalert';
 
 const createRowData = (item, rowIndex) => {
   const subtotal = formatRp(item.subtotal);
@@ -53,6 +54,7 @@ const Transaction = () => {
       } catch (e) {
         console.log(e);
         if (e.response.status === 403) {
+          alertError('Silakan login terlebih dahulu');
           navigate('/');
         }
       }

@@ -15,9 +15,11 @@ import {
   InputGroup,
   InputNumber,
   List,
+  Message,
   Panel,
   Popover,
   Table,
+  useToaster,
   Whisper,
 } from 'rsuite';
 import SidebarComp from '../components/SidebarComp';
@@ -31,6 +33,7 @@ import { createSales, searchSales } from '../api/sales';
 import { getAllCustomer } from '../api/customers';
 import { getAllBarang } from '../api/barang';
 import { formatRp } from '../utils/formatting';
+import { alertError, alertSuccess } from '../utils/sweetalert';
 
 const Overlay = forwardRef(({ datas, onSelect, onClose, ...rest }, ref) => {
   const handleSelect = (data) => {
@@ -59,6 +62,7 @@ const Overlay = forwardRef(({ datas, onSelect, onClose, ...rest }, ref) => {
 const DrawerEditBarang = ({ barang, open, close, onSave }) => {
   const [qty, setQty] = useState(1);
   const [diskon, setDiskon] = useState(0);
+  const toaster = useToaster();
 
   useEffect(() => {
     setQty(barang.qty);
@@ -77,6 +81,7 @@ const DrawerEditBarang = ({ barang, open, close, onSave }) => {
       kode: barang.kode,
       nama: barang.nama,
     };
+    toaster.push(messageSuccess, { placement: 'topStart', duration: 2000 });
     onSave(data);
     close();
   };
@@ -86,6 +91,12 @@ const DrawerEditBarang = ({ barang, open, close, onSave }) => {
     setQty(1);
     setDiskon(0);
   };
+
+  const messageSuccess = (
+    <Message showIcon type="success">
+      <b>Success!</b> Berhasil mengedit barang
+    </Message>
+  );
 
   let hargaDiskon = 0;
   let total = 0;
@@ -139,7 +150,9 @@ const DrawerEditBarang = ({ barang, open, close, onSave }) => {
               Kuantitas
             </Form.ControlLabel>
             <InputNumber
-              onChange={(value) => setQty(value === '' ? 1 : value)}
+              onChange={(value) =>
+                setQty(value === '' || value <= 0 ? 1 : value)
+              }
               defaultValue={barang.qty}
               name="qty"
               min={1}
@@ -151,7 +164,11 @@ const DrawerEditBarang = ({ barang, open, close, onSave }) => {
             </Form.ControlLabel>
             <InputGroup>
               <InputNumber
-                onChange={(value) => setDiskon(value === '' ? 0 : value)}
+                onChange={(value) =>
+                  setDiskon(
+                    value === '' || value < 0 ? 0 : value > 100 ? 100 : value
+                  )
+                }
                 defaultValue={barang.diskon_nilai * 100}
                 name="diskon"
                 max={100}
@@ -192,15 +209,21 @@ const DrawerAddBarang = ({ barangInput, open, close, barangs, onAdd }) => {
   const [selectedBarang, setSelectedBarang] = useState({});
   const [qty, setQty] = useState(1);
   const [diskon, setDiskon] = useState(0);
+  const [showAlert, setShowAlert] = useState(false);
+  const [msg, setMsg] = useState('');
+  const toaster = useToaster();
 
   const handleBarang = (barang) => {
     const isAny = barangInput.filter((item) => item.kode === barang.kode);
     if (isAny.length > 0) {
-      console.log('Barang sudah ada, silakan edit');
+      setMsg('Barang sudah ada');
+      setShowAlert(true);
     } else {
       setSelectedBarang(barang);
+      setShowAlert(false);
     }
   };
+
   const handleAdd = () => {
     const diskonNilai = diskon / 100;
     const data = {
@@ -214,12 +237,15 @@ const DrawerAddBarang = ({ barangInput, open, close, barangs, onAdd }) => {
     };
     if (selectedBarang.id) {
       onAdd(data);
+      toaster.push(messageSuccess, { placement: 'topStart', duration: 2000 });
       setSelectedBarang({});
       setQty(1);
       setDiskon(0);
+      setShowAlert(false);
       close();
     } else {
-      console.log('Harap pilih barang terlebih dahulu');
+      setMsg('Harap pilih barang terlebih dahulu');
+      setShowAlert(true);
     }
   };
 
@@ -228,7 +254,14 @@ const DrawerAddBarang = ({ barangInput, open, close, barangs, onAdd }) => {
     setSelectedBarang({});
     setQty(1);
     setDiskon(0);
+    setShowAlert(false);
   };
+
+  const messageSuccess = (
+    <Message showIcon type="success">
+      <b>Success!</b> Berhasil menambah barang
+    </Message>
+  );
 
   let hargaDiskon = 0;
   let total = 0;
@@ -252,6 +285,11 @@ const DrawerAddBarang = ({ barangInput, open, close, barangs, onAdd }) => {
             </Button>
           </Drawer.Actions>
         </Drawer.Header>
+        {showAlert && (
+          <Message showIcon type="error">
+            {msg}
+          </Message>
+        )}
         <Drawer.Body>
           <div className="flex items-center mb-2">
             <Form.ControlLabel className="font-bold w-[65px]">
@@ -307,7 +345,9 @@ const DrawerAddBarang = ({ barangInput, open, close, barangs, onAdd }) => {
               Kuantitas
             </Form.ControlLabel>
             <InputNumber
-              onChange={(value) => setQty(value === '' ? 1 : value)}
+              onChange={(value) =>
+                setQty(value === '' || value <= 0 ? 1 : value)
+              }
               defaultValue={qty}
               name="qty"
               min={1}
@@ -319,7 +359,11 @@ const DrawerAddBarang = ({ barangInput, open, close, barangs, onAdd }) => {
             </Form.ControlLabel>
             <InputGroup>
               <InputNumber
-                onChange={(value) => setDiskon(value === '' ? 0 : value)}
+                onChange={(value) =>
+                  setDiskon(
+                    value === '' || value < 0 ? 0 : value > 100 ? 100 : value
+                  )
+                }
                 defaultValue={diskon}
                 name="diskon"
                 max={100}
@@ -441,13 +485,8 @@ const CreateTransaction = () => {
   const [barangsInput, setBarangsInput] = useState([]);
   const [diskon, setDiskon] = useState(0);
   const [ongkir, setOngkir] = useState(0);
-  //   tgl: '',
-  //   subtotal: 0,
-  //   diskon: 0,
-  //   ongkir: 0,
-  //   total_bayar: 0,
-  //   items: [],
-  // });
+  const [errMsg, setErrMsg] = useState([]);
+  const toaster = useToaster();
   useTitle('Buat Transaksi | Program Transaksi');
 
   useEffect(() => {
@@ -458,6 +497,7 @@ const CreateTransaction = () => {
       } catch (e) {
         console.log(e);
         if (e.response.status === 403) {
+          alertError('Silakan login terlebih dahulu');
           navigate('/');
         }
       }
@@ -510,11 +550,6 @@ const CreateTransaction = () => {
     setSelectedBarang({});
   };
 
-  const handleRemoveBarang = (barang) => {
-    const items = barangsInput.filter((item) => item.kode !== barang.kode);
-    setBarangsInput(items);
-  };
-
   const handleCloseEditBarang = () => {
     setOpenDrawerEdit(false);
     setSelectedBarang({});
@@ -522,22 +557,24 @@ const CreateTransaction = () => {
 
   const isValid = () => {
     let valid = true;
+    const msg = [];
 
-    if (selectedCust.id === undefined) {
-      console.log('Pilih customer terlebih dahulu');
+    if (tgl === '') {
+      msg.push('Pilih tanggal terlebih dahulu');
       valid = false;
     }
 
-    if (tgl === '') {
-      console.log('Pilih tanggal terlebih dahulu');
+    if (selectedCust.id === undefined) {
+      msg.push('Pilih customer terlebih dahulu');
       valid = false;
     }
 
     if (barangsInput.length <= 0) {
-      console.log('Pilih barang terlebih dahulu');
+      msg.push('Pilih barang terlebih dahulu');
       valid = false;
     }
 
+    setErrMsg(msg);
     return valid;
   };
 
@@ -557,11 +594,15 @@ const CreateTransaction = () => {
       try {
         const res = await createSales(data);
         if (res.status === 201) {
+          alertSuccess('Transaksi berhasil dibuat');
           navigate('/transactions');
         }
       } catch (e) {
         console.log(e);
+        alertError(e.response.data.message);
       }
+    } else {
+      pushToasterErr();
     }
   };
 
@@ -570,6 +611,12 @@ const CreateTransaction = () => {
     const handleEditBarang = () => {
       setSelectedBarang(barang);
       setOpenDrawerEdit(true);
+    };
+
+    const handleRemoveBarang = (barang) => {
+      const items = barangsInput.filter((item) => item.kode !== barang.kode);
+      setBarangsInput(items);
+      pushToasterSuccess();
     };
 
     const diskonSum = barang.qty * barang.diskon_harga;
@@ -587,6 +634,30 @@ const CreateTransaction = () => {
     }
     return totalBayar;
   };
+
+  const pushToasterErr = () => {
+    toaster.push(messageErr, { placement: 'topStart', duration: 5000 });
+  };
+
+  const pushToasterSuccess = () => {
+    toaster.push(messageSuccess, { placement: 'topStart', duration: 3000 });
+  };
+
+  const messageSuccess = (
+    <Message showIcon type="success">
+      <b>Success!</b> Berhasil menghapus barang
+    </Message>
+  );
+
+  const messageErr = (
+    <Message showIcon type="error" header="Error" closable>
+      <ol className="list-disc">
+        {errMsg.map((msg, i) => (
+          <li key={i}>{msg}</li>
+        ))}
+      </ol>
+    </Message>
+  );
 
   return (
     <>
@@ -764,7 +835,7 @@ const CreateTransaction = () => {
                           min={0}
                           max={totalBayar}
                           onChange={(value) =>
-                            setDiskon(value === '' ? 0 : value)
+                            setDiskon(value === '' || value < 0 ? 0 : value)
                           }
                         />
                       </td>
@@ -776,7 +847,7 @@ const CreateTransaction = () => {
                           min={0}
                           max={totalBayar}
                           onChange={(value) =>
-                            setOngkir(value === '' ? 0 : value)
+                            setOngkir(value === '' || value < 0 ? 0 : value)
                           }
                         />
                       </td>
