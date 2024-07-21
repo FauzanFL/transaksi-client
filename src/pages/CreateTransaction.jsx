@@ -124,7 +124,7 @@ const DrawerEditBarang = ({ barang, open, close, onSave, isMobile }) => {
         </Drawer.Header>
         <Drawer.Body>
           <div className="flex items-center mb-2">
-            <Form.ControlLabel className="font-bold w-[65px]">
+            <Form.ControlLabel className="font-bold w-[57px] md:w-[65px]">
               Kode
             </Form.ControlLabel>
             <IconButton style={{ width: 150 }} icon={<Search />} disabled>
@@ -305,7 +305,7 @@ const DrawerAddBarang = ({
         )}
         <Drawer.Body>
           <div className="flex items-center mb-2">
-            <Form.ControlLabel className="font-bold w-[65px]">
+            <Form.ControlLabel className="font-bold w-[57px] md:w-[65px]">
               Kode
             </Form.ControlLabel>
             <Whisper

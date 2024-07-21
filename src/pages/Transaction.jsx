@@ -6,8 +6,10 @@ import {
   IconButton,
   Input,
   InputGroup,
+  Pagination,
   Panel,
   Table,
+  useMediaQuery,
 } from 'rsuite';
 import SidebarComp from '../components/SidebarComp';
 import HeaderComp from '../components/HeaderComp';
@@ -68,6 +70,8 @@ const Transaction = () => {
   const [loading, setLoading] = useState(true);
   const [uname, setUname] = useState('');
   const [sales, setSales] = useState([]);
+  const [activePage, setActivePage] = useState(1);
+  const [isMobile] = useMediaQuery('(max-width: 600px)');
   useTitle('Transaksi | Program Transaksi');
 
   useEffect(() => {
@@ -125,9 +129,20 @@ const Transaction = () => {
     }
   };
 
-  let total = 0;
-  const data = sales.map((sale, i) => {
-    total += parseFloat(sale.total_bayar);
+  const limit = 10;
+  const startIndex = (activePage - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  let displayedItems = sales;
+  if (sales.length != 0) {
+    displayedItems = sales.slice(startIndex, endIndex);
+  }
+
+  let total = sales.reduce(
+    (prev, sale) => prev + parseFloat(sale.total_bayar),
+    0
+  );
+  const data = displayedItems.map((sale, i) => {
     return createRowData(sale, i, render);
   });
 
@@ -243,6 +258,22 @@ const Transaction = () => {
                   <Cell dataKey="total" align="center" />
                 </Column>
               </Table>
+              <Pagination
+                layout={
+                  isMobile ? ['-', 'pager'] : ['total', '-', '|', 'pager']
+                }
+                limit={limit}
+                total={sales.length}
+                first
+                last
+                next
+                prev
+                size={isMobile ? 'sm' : 'md'}
+                maxButtons={3}
+                activePage={activePage}
+                onChangePage={setActivePage}
+                style={{ margin: 10 }}
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 px-2 text-lg font-bold bg-slate-100">
                 <div className="text-end">Grand Total</div>
                 <div className="text-end md:text-center">{total}</div>
