@@ -13,20 +13,44 @@ import SidebarComp from '../components/SidebarComp';
 import HeaderComp from '../components/HeaderComp';
 import { useNavigate } from 'react-router-dom';
 import useTitle from '../hooks/UseTitle';
-import { getAllSales, searchSales } from '../api/sales';
+import { deleteSales, getAllSales, searchSales } from '../api/sales';
 import Column from 'rsuite/esm/Table/TableColumn';
 import { Cell, HeaderCell } from 'rsuite-table';
-import { Plus, Search } from '@rsuite/icons';
+import { Plus, Search, Trash } from '@rsuite/icons';
 import { formatRp, formatTgl } from '../utils/formatting';
-import { alertError } from '../utils/sweetalert';
+import { alertConfirm, alertError, alertSuccess } from '../utils/sweetalert';
 
-const createRowData = (item, rowIndex) => {
+const createRowData = (item, rowIndex, render) => {
   const subtotal = formatRp(item.subtotal);
   const diskon = formatRp(item.diskon);
   const ongkir = formatRp(item.ongkir);
   const total = formatRp(item.total_bayar);
 
+  const deleteData = async () => {
+    try {
+      const res = await deleteSales(item.id);
+      if (res.status === 200) {
+        alertSuccess('Berhasil menghapus data');
+        render();
+      }
+    } catch (e) {
+      console.log(e);
+      alertError(e.response.data.message);
+    }
+  };
+
   return {
+    aksi: (
+      <IconButton
+        appearance="primary"
+        color="red"
+        size="md"
+        onClick={() =>
+          alertConfirm('Data tidak dapat dipulihakan kembali', deleteData)
+        }
+        icon={<Trash />}
+      ></IconButton>
+    ),
     no: rowIndex + 1,
     noTransaksi: item.kode,
     tgl: formatTgl(item.tgl),
@@ -52,10 +76,11 @@ const Transaction = () => {
         const res = await isLogin();
         setUname(res.data.user.username);
       } catch (e) {
-        console.log(e);
         if (e.response.status === 403) {
           alertError('Silakan login terlebih dahulu');
           navigate('/');
+        } else {
+          console.log(e);
         }
       }
     };
@@ -63,7 +88,6 @@ const Transaction = () => {
     const fetchTransaksi = async () => {
       try {
         const res = await getAllSales();
-        console.log(res);
         if (res.status === 200) {
           setSales(res.data);
           setLoading(false);
@@ -76,6 +100,19 @@ const Transaction = () => {
     fetchTransaksi();
     isLoggedIn();
   }, [navigate]);
+
+  const render = async () => {
+    try {
+      const res = await getAllSales();
+      console.log(res);
+      if (res.status === 200) {
+        setSales(res.data);
+        setLoading(false);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const handleSearch = async (key) => {
     try {
@@ -91,7 +128,7 @@ const Transaction = () => {
   let total = 0;
   const data = sales.map((sale, i) => {
     total += parseFloat(sale.total_bayar);
-    return createRowData(sale, i);
+    return createRowData(sale, i, render);
   });
 
   total = total.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
@@ -104,15 +141,25 @@ const Transaction = () => {
           <Content style={{ padding: 10, overflow: 'auto' }}>
             <h1 className="mb-3">Transaksi</h1>
             <Panel header="Daftar transaksi" bordered bodyFill>
-              <div className="flex justify-between mb-2 mx-2">
-                <IconButton
-                  icon={<Plus />}
-                  color="green"
-                  appearance="primary"
-                  onClick={() => navigate('/transactions/add')}
-                >
-                  Tambah Transaksi
-                </IconButton>
+              <div className="flex justify-between gap-3 mb-2 mx-2">
+                <div className="block md:hidden">
+                  <IconButton
+                    icon={<Plus />}
+                    color="green"
+                    appearance="primary"
+                    onClick={() => navigate('/transactions/add')}
+                  />
+                </div>
+                <div className="hidden md:block">
+                  <IconButton
+                    icon={<Plus />}
+                    color="green"
+                    appearance="primary"
+                    onClick={() => navigate('/transactions/add')}
+                  >
+                    Tambah Transaksi
+                  </IconButton>
+                </div>
                 <InputGroup
                   inside
                   style={{ maxWidth: 350 }}
@@ -132,8 +179,15 @@ const Transaction = () => {
                 bordered
                 cellBordered
                 autoHeight
+                rowHeight={60}
                 loading={loading}
               >
+                <Column width={70} fixed>
+                  <HeaderCell align="center" className="font-bold">
+                    Aksi
+                  </HeaderCell>
+                  <Cell dataKey="aksi" align="center" />
+                </Column>
                 <Column width={50}>
                   <HeaderCell align="center" className="font-bold">
                     No
@@ -189,9 +243,9 @@ const Transaction = () => {
                   <Cell dataKey="total" align="center" />
                 </Column>
               </Table>
-              <div className="grid grid-cols-2 text-lg font-bold bg-slate-100">
+              <div className="grid grid-cols-1 md:grid-cols-2 px-2 text-lg font-bold bg-slate-100">
                 <div className="text-end">Grand Total</div>
-                <div className="text-center">{total}</div>
+                <div className="text-end md:text-center">{total}</div>
               </div>
             </Panel>
           </Content>

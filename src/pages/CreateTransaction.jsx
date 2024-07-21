@@ -19,6 +19,7 @@ import {
   Panel,
   Popover,
   Table,
+  useMediaQuery,
   useToaster,
   Whisper,
 } from 'rsuite';
@@ -59,7 +60,7 @@ const Overlay = forwardRef(({ datas, onSelect, onClose, ...rest }, ref) => {
   );
 });
 
-const DrawerEditBarang = ({ barang, open, close, onSave }) => {
+const DrawerEditBarang = ({ barang, open, close, onSave, isMobile }) => {
   const [qty, setQty] = useState(1);
   const [diskon, setDiskon] = useState(0);
   const toaster = useToaster();
@@ -108,7 +109,7 @@ const DrawerEditBarang = ({ barang, open, close, onSave }) => {
 
   return (
     <>
-      <Drawer open={open} onClose={handleClose}>
+      <Drawer open={open} size={isMobile ? 'full' : 600} onClose={handleClose}>
         <Drawer.Header>
           <Drawer.Title style={{ fontWeight: 'bold' }}>
             Edit Barang
@@ -205,7 +206,14 @@ const DrawerEditBarang = ({ barang, open, close, onSave }) => {
   );
 };
 
-const DrawerAddBarang = ({ barangInput, open, close, barangs, onAdd }) => {
+const DrawerAddBarang = ({
+  barangInput,
+  open,
+  close,
+  barangs,
+  onAdd,
+  isMobile,
+}) => {
   const [selectedBarang, setSelectedBarang] = useState({});
   const [qty, setQty] = useState(1);
   const [diskon, setDiskon] = useState(0);
@@ -274,7 +282,7 @@ const DrawerAddBarang = ({ barangInput, open, close, barangs, onAdd }) => {
 
   return (
     <>
-      <Drawer open={open} onClose={handleClose}>
+      <Drawer open={open} size={isMobile ? 'full' : 600} onClose={handleClose}>
         <Drawer.Header>
           <Drawer.Title style={{ fontWeight: 'bold' }}>
             Tambah Barang
@@ -297,7 +305,7 @@ const DrawerAddBarang = ({ barangInput, open, close, barangs, onAdd }) => {
             </Form.ControlLabel>
             <Whisper
               trigger="click"
-              placement="rightStart"
+              placement={isMobile ? 'bottom' : 'rightStart'}
               style={{ position: 'relative' }}
               speaker={(props, ref) => {
                 const { className, left, top, onClose } = props;
@@ -487,6 +495,7 @@ const CreateTransaction = () => {
   const [ongkir, setOngkir] = useState(0);
   const [errMsg, setErrMsg] = useState([]);
   const toaster = useToaster();
+  const [isMobile] = useMediaQuery('(max-width: 600px)');
   useTitle('Buat Transaksi | Program Transaksi');
 
   useEffect(() => {
@@ -495,10 +504,11 @@ const CreateTransaction = () => {
         const res = await isLogin();
         setUname(res.data.user.username);
       } catch (e) {
-        console.log(e);
         if (e.response.status === 403) {
           alertError('Silakan login terlebih dahulu');
           navigate('/');
+        } else {
+          console.log(e);
         }
       }
     };
@@ -661,7 +671,7 @@ const CreateTransaction = () => {
 
   return (
     <>
-      <Container className="h-[100vh]">
+      <Container className="h-[100vh] overflow-hidden">
         <SidebarComp page={'createTransaction'} />
         <Container>
           <HeaderComp uname={uname} />
@@ -683,6 +693,7 @@ const CreateTransaction = () => {
                   Tanggal
                 </Form.ControlLabel>
                 <DatePicker
+                  placement={isMobile ? 'bottomEnd' : 'rightStart'}
                   onChange={(value) => setTgl(value)}
                   name="tgl"
                   format="dd-MMM-yyyy"
@@ -695,12 +706,12 @@ const CreateTransaction = () => {
               style={{ maxWidth: 500, marginBottom: 10 }}
             >
               <div className="flex items-center mb-2">
-                <Form.ControlLabel className="font-bold w-[60px]">
+                <Form.ControlLabel className="font-bold w-[55px] md:w-[60px]">
                   Kode
                 </Form.ControlLabel>
                 <Whisper
                   trigger="click"
-                  placement="bottom"
+                  placement={isMobile ? 'bottom' : 'rightStart'}
                   speaker={(props, ref) => {
                     const { className, left, top, onClose } = props;
                     return (
@@ -760,7 +771,7 @@ const CreateTransaction = () => {
                 autoHeight
                 rowHeight={60}
               >
-                <Column minWidth={150} flexGrow={2} fixed>
+                <Column minWidth={110} flexGrow={2} fixed>
                   <HeaderCell align="center" className="font-bold">
                     Aksi
                   </HeaderCell>
@@ -880,6 +891,7 @@ const CreateTransaction = () => {
           open={openDrawerAdd}
           close={() => setOpenDrawerAdd(false)}
           onAdd={handleAddBarangs}
+          isMobile={isMobile}
         />
         <DrawerEditBarang
           barang={selectedBarang}
@@ -887,6 +899,7 @@ const CreateTransaction = () => {
           open={openDrawerEdit}
           close={handleCloseEditBarang}
           onSave={handleEditBarangs}
+          isMobile={isMobile}
         />
       </Container>
     </>

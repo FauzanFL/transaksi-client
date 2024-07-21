@@ -37,3 +37,16 @@ export const createSales = async (data) => {
   );
   return res;
 };
+
+export const deleteSales = async (id) => {
+  const res = await axios.delete(
+    `${import.meta.env.VITE_API_URL}/sales/${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${getCookie('token')}`,
+      },
+      withCredentials: true,
+    }
+  );
+  return res;
+};

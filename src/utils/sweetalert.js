@@ -20,14 +20,16 @@ export const alertError = (msg) => {
   });
 };
 
-export const alertConfirm = (next) => {
+export const alertConfirm = (msg, next) => {
   Swal.fire({
     title: 'Apakah Anda yakin?',
+    text: msg,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#d33',
     cancelButtonColor: '#b8b6b0',
-    confirmButtonText: 'Ya, hapus!',
+    confirmButtonText: 'Ya!',
+    cancelButtonText: 'Batal',
   }).then((res) => {
     if (res.isConfirmed) {
       next();
