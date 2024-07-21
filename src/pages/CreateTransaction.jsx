@@ -497,7 +497,6 @@ const CreateTransaction = () => {
   const [barangsInput, setBarangsInput] = useState([]);
   const [diskon, setDiskon] = useState(0);
   const [ongkir, setOngkir] = useState(0);
-  const [errMsg, setErrMsg] = useState([]);
   const toaster = useToaster();
   const [isMobile] = useMediaQuery('(max-width: 600px)');
   useTitle('Buat Transaksi | Program Transaksi');
@@ -571,24 +570,34 @@ const CreateTransaction = () => {
 
   const isValid = () => {
     let valid = true;
-    const msg = [];
+    const msgs = [];
 
     if (tgl === '') {
-      msg.push('Pilih tanggal terlebih dahulu');
+      msgs.push('Pilih tanggal terlebih dahulu');
       valid = false;
     }
 
     if (selectedCust.id === undefined) {
-      msg.push('Pilih customer terlebih dahulu');
+      msgs.push('Pilih customer terlebih dahulu');
       valid = false;
     }
 
     if (barangsInput.length <= 0) {
-      msg.push('Pilih barang terlebih dahulu');
+      msgs.push('Pilih barang terlebih dahulu');
       valid = false;
     }
 
-    setErrMsg(msg);
+    const messageErr = (
+      <Message showIcon type="error" header="Error" closable>
+        <ol className="list-disc">
+          {msgs.map((msg, i) => (
+            <li key={i}>{msg}</li>
+          ))}
+        </ol>
+      </Message>
+    );
+
+    toaster.push(messageErr, { placement: 'topStart', duration: 5000 });
     return valid;
   };
 
@@ -615,8 +624,6 @@ const CreateTransaction = () => {
         console.log(e);
         alertError(e.response.data.message);
       }
-    } else {
-      pushToasterErr();
     }
   };
 
@@ -649,10 +656,6 @@ const CreateTransaction = () => {
     return totalBayar;
   };
 
-  const pushToasterErr = () => {
-    toaster.push(messageErr, { placement: 'topStart', duration: 5000 });
-  };
-
   const pushToasterSuccess = () => {
     toaster.push(messageSuccess, { placement: 'topStart', duration: 3000 });
   };
@@ -660,16 +663,6 @@ const CreateTransaction = () => {
   const messageSuccess = (
     <Message showIcon type="success">
       <b>Success!</b> Berhasil menghapus barang
-    </Message>
-  );
-
-  const messageErr = (
-    <Message showIcon type="error" header="Error" closable>
-      <ol className="list-disc">
-        {errMsg.map((msg, i) => (
-          <li key={i}>{msg}</li>
-        ))}
-      </ol>
     </Message>
   );
 
