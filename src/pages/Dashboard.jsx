@@ -38,7 +38,6 @@ const Dashboard = () => {
       try {
         const res = await getAllSales();
         if (res.status === 200) {
-          console.log(res.data);
           setTransactions(res.data);
         }
       } catch (e) {
@@ -75,8 +74,12 @@ const Dashboard = () => {
   const sum = transactions.length;
   const sumBarang = barangs.length;
   const sumCust = customers.length;
-  const max = Math.max(...transactions.map((t) => parseFloat(t.total_bayar)));
-  const min = Math.min(...transactions.map((t) => parseFloat(t.total_bayar)));
+  let max = 0;
+  let min = 0;
+  if (transactions.length !== 0) {
+    max = Math.max(...transactions.map((t) => parseFloat(t.total_bayar)));
+    min = Math.min(...transactions.map((t) => parseFloat(t.total_bayar)));
+  }
 
   const total = transactions.reduce(
     (prev, item) => prev + parseFloat(item.total_bayar),

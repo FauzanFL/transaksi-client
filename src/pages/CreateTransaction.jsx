@@ -73,14 +73,16 @@ const DrawerEditBarang = ({ barang, open, close, onSave, isMobile }) => {
   const handleSave = () => {
     const diskonNilai = diskon / 100;
     const diskonHarga = parseFloat(barang.harga_bandrol) * diskonNilai;
+    total = parseFloat(barang.harga_bandrol) * qty - qty * hargaDiskon;
     const data = {
       barang_id: barang.barang_id,
       harga_bandrol: barang.harga_bandrol,
       qty: parseInt(qty),
       diskon_nilai: diskonNilai,
-      diskon_harga: diskonHarga,
+      harga_diskon: diskonHarga,
       kode: barang.kode,
       nama: barang.nama,
+      total,
     };
     toaster.push(messageSuccess, { placement: 'topStart', duration: 2000 });
     onSave(data);
@@ -234,14 +236,17 @@ const DrawerAddBarang = ({
 
   const handleAdd = () => {
     const diskonNilai = diskon / 100;
+    hargaDiskon = selectedBarang.harga * diskonNilai;
+    total = parseFloat(selectedBarang.harga) * qty - qty * hargaDiskon;
     const data = {
       barang_id: selectedBarang.id,
       harga_bandrol: selectedBarang.harga,
       qty,
       diskon_nilai: diskonNilai,
-      diskon_harga: selectedBarang.harga * diskonNilai,
+      harga_diskon: selectedBarang.harga * diskonNilai,
       kode: selectedBarang.kode,
       nama: selectedBarang.nama,
+      total,
     };
     if (selectedBarang.id) {
       onAdd(data);
@@ -434,13 +439,12 @@ const generateKode = async () => {
 const createRowData = (item, rowIndex, onDelete, onEdit) => {
   const harga = formatRp(item.harga_bandrol);
 
-  const diskonRp = formatRp(item.diskon_harga);
+  const diskonRp = formatRp(item.harga_diskon);
 
-  const diskonSum = item.qty * item.diskon_harga;
+  const diskonSum = item.qty * item.harga_diskon;
   const hargaDiskon = formatRp(diskonSum);
 
-  const totalHarga = item.harga_bandrol * item.qty - diskonSum;
-  const total = formatRp(totalHarga);
+  const total = formatRp(item.total);
 
   const diskon = item.diskon_nilai * 100;
 
@@ -629,7 +633,7 @@ const CreateTransaction = () => {
       pushToasterSuccess();
     };
 
-    const diskonSum = barang.qty * barang.diskon_harga;
+    const diskonSum = barang.qty * barang.harga_diskon;
     const totalHarga = barang.harga_bandrol * barang.qty - diskonSum;
     subtotal += parseFloat(totalHarga);
     return createRowData(barang, i, handleRemoveBarang, handleEditBarang);
