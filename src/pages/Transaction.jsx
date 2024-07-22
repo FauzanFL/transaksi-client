@@ -188,7 +188,7 @@ const Transaction = () => {
                   className="shadow-sm"
                 >
                   <Input
-                    placeholder="Cari..."
+                    placeholder="No transaksi, tanggal, nama"
                     onChange={(value) => handleSearch(value)}
                   />
                   <InputGroup.Addon>
