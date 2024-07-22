@@ -597,7 +597,9 @@ const CreateTransaction = () => {
       </Message>
     );
 
-    toaster.push(messageErr, { placement: 'topStart', duration: 5000 });
+    if (msgs.length != 0) {
+      toaster.push(messageErr, { placement: 'topStart', duration: 5000 });
+    }
     return valid;
   };
 
