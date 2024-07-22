@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { isLogin } from '../api/users';
 import useTitle from '../hooks/UseTitle';
 import { useNavigate } from 'react-router-dom';
-import { Container, Content, Panel } from 'rsuite';
+import { Container, Content, Loader, Panel } from 'rsuite';
 import SidebarComp from '../components/SidebarComp';
 import HeaderComp from '../components/HeaderComp';
 import { alertError } from '../utils/sweetalert';
@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const [barangs, setBarangs] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   useTitle('Dashboard | Program Transaksi');
 
   useEffect(() => {
@@ -35,13 +36,16 @@ const Dashboard = () => {
     };
 
     const fetchTransactions = async () => {
+      setIsLoading(true);
       try {
         const res = await getAllSales();
         if (res.status === 200) {
           setTransactions(res.data);
         }
+        setIsLoading(false);
       } catch (e) {
         console.log(e);
+        setIsLoading(false);
       }
     };
     const fetchBarang = async () => {
@@ -133,6 +137,15 @@ const Dashboard = () => {
             </div>
           </Content>
         </Container>
+        {isLoading && (
+          <Loader
+            backdrop
+            style={{ zIndex: 99 }}
+            content="loading..."
+            vertical
+            center
+          />
+        )}
       </Container>
     </>
   );
