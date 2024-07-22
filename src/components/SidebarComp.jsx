@@ -1,7 +1,13 @@
 /* eslint-disable react/prop-types */
-import { Conversion, Dashboard, ExpandOutline } from '@rsuite/icons';
+import {
+  CloseOutline,
+  Conversion,
+  Dashboard,
+  ExpandOutline,
+  Menu,
+} from '@rsuite/icons';
 import { useEffect, useState } from 'react';
-import { Nav, Sidebar, Sidenav, Toggle, useMediaQuery } from 'rsuite';
+import { IconButton, Nav, Sidebar, Sidenav, useMediaQuery } from 'rsuite';
 
 const SidebarComp = ({ page }) => {
   const [expanded, setExpanded] = useState(true);
@@ -31,12 +37,16 @@ const SidebarComp = ({ page }) => {
             appearance="inverse"
             style={{ width: '100%', height: '100%' }}
           >
-            <div className="flex justify-end items-center mt-3">
-              <Toggle
-                color="violet"
-                onChange={setExpanded}
-                style={{ marginRight: 7 }}
-                checked={expanded}
+            <div className="flex justify-end items-center mt-3 mx-2">
+              <IconButton
+                onClick={() => setExpanded(!expanded)}
+                icon={
+                  expanded ? (
+                    <CloseOutline color="#000" />
+                  ) : (
+                    <Menu color="#000" />
+                  )
+                }
               />
             </div>
             <hr />
