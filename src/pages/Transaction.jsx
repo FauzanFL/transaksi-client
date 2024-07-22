@@ -6,6 +6,7 @@ import {
   IconButton,
   Input,
   InputGroup,
+  Loader,
   Pagination,
   Panel,
   Table,
@@ -68,6 +69,7 @@ const createRowData = (item, rowIndex, render) => {
 const Transaction = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [uname, setUname] = useState('');
   const [sales, setSales] = useState([]);
   const [activePage, setActivePage] = useState(1);
@@ -90,14 +92,17 @@ const Transaction = () => {
     };
 
     const fetchTransaksi = async () => {
+      setIsLoading(true);
       try {
         const res = await getAllSales();
         if (res.status === 200) {
           setSales(res.data);
           setLoading(false);
         }
+        setIsLoading(false);
       } catch (e) {
         console.log(e);
+        setIsLoading(false);
       }
     };
 
@@ -106,15 +111,17 @@ const Transaction = () => {
   }, [navigate]);
 
   const render = async () => {
+    setIsLoading(true);
     try {
       const res = await getAllSales();
-      console.log(res);
       if (res.status === 200) {
         setSales(res.data);
         setLoading(false);
       }
+      setIsLoading(false);
     } catch (e) {
       console.log(e);
+      setIsLoading(false);
     }
   };
 
@@ -281,6 +288,15 @@ const Transaction = () => {
             </Panel>
           </Content>
         </Container>
+        {isLoading && (
+          <Loader
+            backdrop
+            style={{ zIndex: 99 }}
+            content="loading..."
+            vertical
+            center
+          />
+        )}
       </Container>
     </>
   );

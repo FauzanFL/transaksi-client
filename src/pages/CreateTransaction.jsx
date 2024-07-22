@@ -15,6 +15,7 @@ import {
   InputGroup,
   InputNumber,
   List,
+  Loader,
   Message,
   Panel,
   Popover,
@@ -498,6 +499,7 @@ const CreateTransaction = () => {
   const [diskon, setDiskon] = useState(0);
   const [ongkir, setOngkir] = useState(0);
   const toaster = useToaster();
+  const [isLoading, setIsLoading] = useState(false);
   const [isMobile] = useMediaQuery('(max-width: 600px)');
   useTitle('Buat Transaksi | Program Transaksi');
 
@@ -604,6 +606,7 @@ const CreateTransaction = () => {
   };
 
   const handleSimpan = async () => {
+    setIsLoading(true);
     if (isValid()) {
       const date = new Date(tgl);
       const data = {
@@ -622,7 +625,9 @@ const CreateTransaction = () => {
           alertSuccess('Transaksi berhasil dibuat');
           navigate('/transactions');
         }
+        setIsLoading(false);
       } catch (e) {
+        setIsLoading(false);
         console.log(e);
         alertError(e.response.data.message);
       }
@@ -900,6 +905,15 @@ const CreateTransaction = () => {
           onSave={handleEditBarangs}
           isMobile={isMobile}
         />
+        {isLoading && (
+          <Loader
+            style={{ zIndex: 99 }}
+            backdrop
+            content="loading..."
+            vertical
+            center
+          />
+        )}
       </Container>
     </>
   );

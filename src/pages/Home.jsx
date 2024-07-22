@@ -10,6 +10,7 @@ import {
   Input,
   InputGroup,
   Message,
+  Loader,
 } from 'rsuite';
 import EyeIcon from '@rsuite/icons/legacy/Eye';
 import EyeSlashIcon from '@rsuite/icons/legacy/EyeSlash';
@@ -24,6 +25,7 @@ const Home = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showAlert, setShowAlert] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
@@ -59,6 +61,7 @@ const Home = () => {
   };
 
   const handleLogin = async () => {
+    setIsLoading(true);
     if (isValid()) {
       try {
         const res = await login({ username, password });
@@ -68,6 +71,7 @@ const Home = () => {
           alertSuccess('Login Berhasil');
           navigate('/dashboard');
         }
+        setIsLoading(false);
       } catch (e) {
         if (e.response.status === 404 || e.response.status === 401) {
           setMessages(['Username atau password salah!']);
@@ -76,9 +80,11 @@ const Home = () => {
           console.log(e);
           alertError(e.response.data);
         }
+        setIsLoading(false);
       }
     } else {
       setShowAlert(true);
+      setIsLoading(false);
     }
   };
 
@@ -133,6 +139,7 @@ const Home = () => {
             </FlexboxGrid.Item>
           </FlexboxGrid>
         </Content>
+        {isLoading && <Loader backdrop content="loading..." vertical center />}
       </Container>
     </>
   );
