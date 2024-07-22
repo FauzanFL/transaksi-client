@@ -84,7 +84,7 @@ const Home = () => {
 
   return (
     <>
-      <Container className="h-[100vh] bg-cover bg-center background">
+      <Container className="h-[100vh] bg-cover bg-center bg-gradient-to-br from-sky-400 via-zinc-200 to-fuchsia-200">
         <Content>
           <FlexboxGrid justify="center" align="middle" className="h-full p-2">
             <FlexboxGrid.Item colspan={24} className="max-w-96">
